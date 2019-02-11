@@ -39,7 +39,7 @@ function loadData() {
     }, 8000);
 
     $.ajax({
-        url: 'https://en.wikipediaasdfasdfasdfasdfasdf.org/w/api.php?',
+        url: 'https://en.wikipedia.org/w/api.php?',
         type: 'GET',
         dataType: 'jsonp',
         data: {
