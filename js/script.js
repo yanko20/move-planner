@@ -1,4 +1,3 @@
-
 function loadData() {
 
     var $body = $('body');
@@ -11,57 +10,51 @@ function loadData() {
     $wikiElem.text("");
     $nytElem.text("");
 
+    // load streetview
     var streetStr = $('#street').val();
     var cityStr = $('#city').val();
     var address = streetStr + ', ' + cityStr;
+    $greeting.text('So you want to live at ' + address + '?');
+    var streetViewUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x400&location=' + address;
+    var imageTagStr = '<img class="bgimg" src="' + streetViewUrl + '&key=AIzaSyA7cL9sjDSPSsYY_ZT5up60gY2XufCi5D4">';
+    $body.append(imageTagStr)
 
-    $greeting.text('So, you want to live at ' + address + '?');
-
-    // load streetview
-    var streetviewUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x400&location=' + address + '';
-    $body.append('<img class="bgimg" src="' + streetviewUrl + '">');
-
-
-    // load nytimes
-    var nytimesUrl = 'http://api.nytimes.com/svc/search/v2/articlesearch.json?q=' + cityStr + '&sort=newest&api-key=3abc9a3d23e60b38c21b4ab9b0a91c07:17:69911633'
-    $.getJSON(nytimesUrl, function(data){
-
-        $nytHeaderElem.text('New York Times Articles About ' + cityStr);
-
-        articles = data.response.docs;
-        for (var i = 0; i < articles.length; i++) {
-            var article = articles[i];
-            $nytElem.append('<li class="article">'+
-                '<a href="'+article.web_url+'">'+article.headline.main+'</a>'+
-                '<p>' + article.snippet + '</p>'+
-            '</li>');
-        };
-
-    }).error(function(e){
-        $nytHeaderElem.text('New York Times Articles Could Not Be Loaded');
+    // get nyt articles
+    var nytArticlesUrl = `https://api.nytimes.com/svc/search/v2/articlesearch.json?q=${cityStr}&sort=newest&api-key=TXvreQcfqL4twxclqQ9Gv70IVTTkz9dS`
+    $.getJSON(nytArticlesUrl, function (data) {
+        let articles = data['response']['docs'];
+        for (let i = 0; i < articles.length; i++) {
+            let article = articles[i]
+            $nytElem.append(`<li class="article">
+                                <a href="${article['web_url']}">${article['headline']['main']}</a>
+                                <p>${article['lead_paragraph']}</p>
+                             </li>`)
+        }
+    }).fail(function () {
+        $nytHeaderElem.text('New York Times Articles Could Not Be Loaded')
     });
 
-
-
-    // load wikipedia data
-    var wikiUrl = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + cityStr + '&format=json&callback=wikiCallback';
     var wikiRequestTimeout = setTimeout(function(){
-        $wikiElem.text("failed to get wikipedia resources");
+        $wikiElem.text('failed to get wikipedia resources')
     }, 8000);
 
     $.ajax({
-        url: wikiUrl,
-        dataType: "jsonp",
-        jsonp: "callback",
-        success: function( response ) {
-            var articleList = response[1];
-
-            for (var i = 0; i < articleList.length; i++) {
-                articleStr = articleList[i];
-                var url = 'http://en.wikipedia.org/wiki/' + articleStr;
-                $wikiElem.append('<li><a href="' + url + '">' + articleStr + '</a></li>');
+        url: 'https://en.wikipediaasdfasdfasdfasdfasdf.org/w/api.php?',
+        type: 'GET',
+        dataType: 'jsonp',
+        data: {
+            action: 'opensearch',
+            format: 'json',
+            search: cityStr,
+        },
+        success: function (data) {
+            articleTitles = data[1]
+            aticleLinks = data[3]
+            for (let i = 0; i < articleTitles.length; i++){
+                $wikiElem.append(`<li><a href=${aticleLinks[i]}>${articleTitles[i]}</a></li>`)
+                console.log(articleTitles[i]);
+                console.log(aticleLinks[i]);
             };
-
             clearTimeout(wikiRequestTimeout);
         }
     });
@@ -71,4 +64,5 @@ function loadData() {
 
 $('#form-container').submit(loadData);
 
-// loadData();
+// google maps api_key='AIzaSyA7cL9sjDSPSsYY_ZT5up60gY2XufCi5D4'
+// nyt api_key='TXvreQcfqL4twxclqQ9Gv70IVTTkz9dS'
